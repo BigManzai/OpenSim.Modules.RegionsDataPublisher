@@ -23,10 +23,15 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         [JsonProperty(PropertyName = "Size")]
         public String RegionSize = "256";
 
+        [JsonProperty(PropertyName = "HomeURI")]
+        public String RegionHomeURI = "";
+
         [JsonProperty(PropertyName = "Image")]
         public String RegionImageUUID = "00000000-0000-0000-0000-000000000000";
 
         [JsonProperty(PropertyName = "UUID")]
         public String RegionUUID = "00000000-0000-0000-0000-000000000000";
+
+
     }
 }

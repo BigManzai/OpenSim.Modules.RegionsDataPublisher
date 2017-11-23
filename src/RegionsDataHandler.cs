@@ -52,6 +52,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                 _regionData.RegionUUID = _scene.RegionInfo.RegionID.ToString();
                 _regionData.RegionIsVisibleInSearch = true;
 
+                if (m_config.Configs["Hypergrid"] != null)
+                    _regionData.RegionHomeURI = m_config.Configs["Hypergrid"].GetString("HomeURI", string.Empty);
+
                 _dataSet.RegionData.Add(_regionData);
 
                 List<ILandObject> _landData = _scene.LandChannel.AllParcels();
