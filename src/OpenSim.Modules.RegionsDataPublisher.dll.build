@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<project name="OpenSim.Modules.RegionsDataPublisher" default="build">
+	  <target name="build">
+		  <echo message="Build Directory is ${project::get-base-directory()}/${build.dir}" />
+		  <mkdir dir="${project::get-base-directory()}/${build.dir}" />
+		  <csc  target="library" debug="${build.debug}" platform="${build.platform}" unsafe="True" warnaserror="False" define="TRACE;DEBUG" nostdlib="False" main="" output="${project::get-base-directory()}/${build.dir}/${project::get-name()}.dll" noconfig="true">
+			  <resources prefix="OpenSim.Modules.RegionsDataPublisher" dynamicprefix="true" >
+			  </resources>
+			  <sources failonempty="true">
+			  </sources>
+			  <references basedir="${project::get-base-directory()}">
+				  <lib>
+					  <include name="${project::get-base-directory()}" />
+					  <include name="${project::get-base-directory()}/../../../bin" />
+				  </lib>
+                <include name="../../binAxiom.MathLib.dll"/>
+                <include name="../../../binHttpServer_OpenSim.dll"/>
+                <include name="../../../binlog4net.dll"/>
+                <include name="../../../binMono.Addins.dll"/>
+                <include name="../../../binNewtonsoft.Json.dll"/>
+                <include name="../../../binNini.dll"/>
+                <include name="../../../binOpenMetaverse.dll"/>
+                <include name="../../../binOpenMetaverseTypes.dll"/>
+                <include name="../../../binOpenSim.Data.dll"/>
+                <include name="../../../binOpenSim.Framework.dll"/>
+                <include name="../../../binOpenSim.Framework.Console.dll"/>
+                <include name="../../../binOpenSim.Framework.Servers.dll"/>
+                <include name="../../../binOpenSim.Framework.Servers.HttpServer.dll"/>
+                <include name="../../../binOpenSim.Region.CoreModules.dll"/>
+                <include name="../../../binOpenSim.Region.Framework.dll"/>
+                <include name="../../../binOpenSim.Server.Base.dll"/>
+                <include name="../../../binOpenSim.Services.Connectors.dll"/>
+                <include name="../../../binOpenSim.Services.Interfaces.dll"/>
+                <include name="System.dll" />
+                <include name="System.Drawing.dll" />
+                <include name="System.Runtime.Remoting.dll" />
+                <include name="System.Xml.dll" />
+                <include name="../../../binXMLRPC.dll"/>
+			  </references>
+		  </csc>
+        <echo message="Copying from [${project::get-base-directory()}/${build.dir}/] to [${project::get-base-directory()}/../../../bin" />
+        <mkdir dir="${project::get-base-directory()}/../../../bin"/>
+        <copy todir="${project::get-base-directory()}/../../../bin">
+            <fileset basedir="${project::get-base-directory()}/${build.dir}/" >
+                <include name="*.dll"/>
+                <include name="*.exe"/>
+                <include name="*.mdb" if='${build.debug}'/>
+                <include name="*.pdb" if='${build.debug}'/>
+            </fileset>
+        </copy>
+	  </target>
+	  <target name="clean">
+		  <delete dir="${bin.dir}" failonerror="false" />
+		  <delete dir="${obj.dir}" failonerror="false" />
+	  </target>
+	  <target name="doc" description="Creates documentation.">
+	  </target>
+</project>
