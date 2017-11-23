@@ -60,7 +60,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
         public void PostInitialise()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void RegionLoaded(Scene scene)

@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Newtonsoft.Json;
 using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
@@ -93,19 +94,27 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _objectData.ObjectOwnerUUID = _cog.OwnerID.ToString();
                     _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
                     _objectData.ObjectImageUUID = GuessImage(_cog);
+                    _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
 
                     _dataSet.ObjectData.Add(_objectData);
                 }
             }
 
-
-
-            return null;
+            
+            return Encoding.Default.GetBytes(JsonConvert.SerializeObject(_dataSet));
         }
 
         private bool getStatusForCopy(SceneObjectGroup prim)
         {
             if (((uint)prim.RootPart.Flags & (uint)PrimFlags.ObjectCopy) != 0)
+                return true;
+
+            return false;
+        }
+
+        private bool getStatusFornSearch(SceneObjectGroup prim)
+        {
+            if ((prim.RootPart.Flags & PrimFlags.JointWheel) == PrimFlags.JointWheel)
                 return true;
 
             return false;
@@ -176,6 +185,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     }
                 }
             }
+
+            if (bestguess.Trim() == String.Empty)
+                bestguess = UUID.Zero.ToString();
 
             return bestguess;
         }
