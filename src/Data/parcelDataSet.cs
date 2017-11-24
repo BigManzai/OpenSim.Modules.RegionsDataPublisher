@@ -35,8 +35,17 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         [JsonProperty(PropertyName = "Bitmap")]
         public String ParcelBitmap = "";
 
+        [JsonProperty(PropertyName = "Position")]
+        public String ParcelPosition = "0/0";
+
         [JsonProperty(PropertyName = "Traffic")]
         public int ParcelDwell = 0;
+
+        [JsonProperty(PropertyName = "Size")]
+        public int ParcelSize = 0;
+
+        [JsonProperty(PropertyName = "Prim")]
+        public int ParcelPrims = 0;
 
         [JsonProperty(PropertyName = "OpenAccess")]
         public bool ParcelPublicAccess = true;

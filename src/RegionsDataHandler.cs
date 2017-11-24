@@ -82,7 +82,16 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
                             _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
                     }
+
+                    _parcelSet.ParcelPosition = _parcel.CenterPoint.X + "/" + _parcel.CenterPoint.Y;
+
+                    if (_parcel.LandData.LandingType == (byte)LandingType.LandingPoint)
+                        if (_parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0)
+                            _parcelSet.ParcelPosition = _parcel.LandData.UserLocation.X + "/" + _parcel.LandData.UserLocation.Y + "/" + _parcel.LandData.UserLocation.Z;
+
+                    _parcelSet.ParcelPrims = _parcel.GetParcelMaxPrimCount();
                     
+                    _parcelSet.ParcelSize = _parcel.LandData.Area;
                     _parcelSet.ParcelBitmap = Convert.ToBase64String(_parcel.LandData.Bitmap);
                     _parcelSet.ParcelPrice = _parcel.LandData.SalePrice;
                     _parcelSet.ParcelIsVisibleInSearch = getStatusForSearch(_parcel);
@@ -113,10 +122,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
                         _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
                         _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
-
                         _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
 
-                        if (m_userManager != null)
+                        if (m_userManager != null && _objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
                         {
                             _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
                             _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
