@@ -24,7 +24,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         public String ParcelSaleToUUID = "00000000-0000-0000-0000-000000000000";
 
         [JsonProperty(PropertyName = "Owner")]
-        public String ParcelOwnerUUID = "00000000-0000-0000-0000-000000000000";
+        public OwnerDataSet ParcelOwner = new OwnerDataSet();
 
         [JsonProperty(PropertyName = "Group")]
         public String ParcelGroup = "00000000-0000-0000-0000-000000000000";

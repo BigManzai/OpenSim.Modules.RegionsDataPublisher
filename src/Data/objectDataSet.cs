@@ -27,7 +27,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         public String ObjectPosition = "0/0/0";
 
         [JsonProperty(PropertyName = "Owner")]
-        public String ObjectOwnerUUID = "00000000-0000-0000-0000-000000000000";
+        public OwnerDataSet ObjectOwner = new OwnerDataSet();
 
         [JsonProperty(PropertyName = "Group")]
         public String ObjectGroupUUID = "00000000-0000-0000-0000-000000000000";

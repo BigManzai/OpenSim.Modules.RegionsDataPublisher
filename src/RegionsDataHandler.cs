@@ -6,6 +6,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.OptionalModules.RegionsDataPublisher.Data;
+using OpenSim.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +21,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private IConfigSource m_config;
         private List<Scene> m_scenes = new List<Scene>();
+        private IUserManagement m_userManager = null;
 
         public RegionsDataHandler(IConfigSource config, ref List<Scene> scenes) : base("GET", "/RegionData/")
         {
@@ -27,6 +29,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                 m_config = config;
 
             m_scenes = scenes;
+
+            if(scenes.Count >= 1)
+                m_userManager = scenes[0].RequestModuleInterface<IUserManagement>();
         }
 
         protected override byte[] ProcessRequest(string path, Stream requestData, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
@@ -66,8 +71,15 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _parcelSet.ParcelDescription = _parcel.LandData.Description;
                     _parcelSet.ImageUUID = _parcel.LandData.SnapshotID.ToString();
                     _parcelSet.ParcelDwell = (int)_parcel.LandData.Dwell;
-                    _parcelSet.ParcelOwnerUUID = _parcel.LandData.OwnerID.ToString();
                     _parcelSet.ParcelGroup = _parcel.LandData.GroupID.ToString();
+                    _parcelSet.ParcelOwner.OwnerUUID = _parcel.LandData.OwnerID.ToString();
+
+                    if (m_userManager != null && _parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
+                    {
+                        _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
+                        _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
+                    }
+                    
                     _parcelSet.ParcelBitmap = Convert.ToBase64String(_parcel.LandData.Bitmap);
                     _parcelSet.ParcelPrice = _parcel.LandData.SalePrice;
                     _parcelSet.ParcelIsVisibleInSearch = getStatusForSearch(_parcel);
@@ -95,7 +107,16 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
                     _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
                     _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
-                    _objectData.ObjectOwnerUUID = _cog.OwnerID.ToString();
+
+                    _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
+
+                    if(m_userManager != null)
+                    {
+                        _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
+                        _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
+                    }
+
+
                     _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
                     _objectData.ObjectImageUUID = GuessImage(_cog);
                     _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
@@ -112,7 +133,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
                         _agentData.AgentUUID = _presence.UUID.ToString();
                         _agentData.AgentHomeURI = _scene.GetAgentHomeURI(_presence.UUID);
-                        _agentData.ParentUUID = _scene.RegionInfo.RegionID.ToString();
+                        _agentData.ParentUUID = _scene.LandChannel.GetLandObject(_presence.AbsolutePosition.X, _presence.AbsolutePosition.Y).LandData.GlobalID.ToString();
 
                         _dataSet.AvatarData.Add(_agentData);
                     }
