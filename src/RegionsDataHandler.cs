@@ -48,8 +48,8 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
             {
                 regionDataSet _regionData = new regionDataSet();
 
-                _regionData.RegionName = _scene.Name;
-                _regionData.RegionEstate = _scene.RegionInfo.EstateSettings.EstateName;
+                _regionData.RegionName = ToUTF8(_scene.Name);
+                _regionData.RegionEstate = ToUTF8(_scene.RegionInfo.EstateSettings.EstateName);
                 _regionData.RegionImageUUID = _scene.RegionInfo.lastMapUUID.ToString();
                 _regionData.RegionPosition = _scene.RegionInfo.WorldLocX + "/" + _scene.RegionInfo.WorldLocY;
                 _regionData.RegionPublicAccess = _scene.RegionInfo.EstateSettings.PublicAccess;
@@ -67,8 +67,8 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                 {
                     parcelDataSet _parcelSet = new parcelDataSet();
 
-                    _parcelSet.ParcelName = _parcel.LandData.Name;
-                    _parcelSet.ParcelDescription = _parcel.LandData.Description;
+                    _parcelSet.ParcelName = ToUTF8(_parcel.LandData.Name);
+                    _parcelSet.ParcelDescription = ToUTF8(_parcel.LandData.Description);
                     _parcelSet.ImageUUID = _parcel.LandData.SnapshotID.ToString();
                     _parcelSet.ParcelDwell = (int)_parcel.LandData.Dwell;
                     _parcelSet.ParcelGroup = _parcel.LandData.GroupID.ToString();
@@ -109,8 +109,8 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     {
                         objectDataSet _objectData = new objectDataSet();
 
-                        _objectData.ObjectName = _cog.Name;
-                        _objectData.ObjectDescription = _cog.Description;
+                        _objectData.ObjectName = ToUTF8(_cog.Name);
+                        _objectData.ObjectDescription = ToUTF8(_cog.Description);
                         _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
                         _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
                         _objectData.ObjectIsForSale = false;
@@ -160,7 +160,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
             }
 
             
-            return Encoding.Default.GetBytes(JsonConvert.SerializeObject(_dataSet));
+            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dataSet, Formatting.Indented));
         }
 
         private bool getStatusForCopy(SceneObjectGroup prim)
@@ -249,6 +249,19 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                 bestguess = UUID.Zero.ToString();
 
             return bestguess;
+        }
+
+        private String ToUTF8(String _text)
+        {
+            try
+            {
+                byte[] UTF8Bytes = Encoding.UTF8.GetBytes(_text);
+                return Encoding.UTF8.GetString(UTF8Bytes, 0, UTF8Bytes.Length);
+            }
+            catch
+            {
+                return _text;
+            }
         }
     }
 }
