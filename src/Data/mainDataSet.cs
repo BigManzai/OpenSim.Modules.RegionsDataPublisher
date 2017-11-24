@@ -13,5 +13,8 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
 
         [JsonProperty(PropertyName = "Objects")]
         public List<objectDataSet> ObjectData = new List<objectDataSet>();
+
+        [JsonProperty(PropertyName = "Avatars")]
+        public List<agentDataSet> AvatarData = new List<agentDataSet>();
     }
 }

@@ -87,8 +87,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
                     _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
                     _objectData.ObjectIsForSale = false;
+                    _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
 
-                    if(_cog.RootPart.ObjectSaleType == 1)
+                    if (_cog.RootPart.ObjectSaleType == 1)
                         _objectData.ObjectIsForSale = true;
 
                     _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
@@ -100,6 +101,21 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
 
                     _dataSet.ObjectData.Add(_objectData);
+                }
+
+                foreach(ScenePresence _presence in _scene.GetScenePresences())
+                {
+                    if(_presence.IsNPC == false)
+                    {
+                        agentDataSet _agentData = new agentDataSet();
+                        _agentData.AgentName = _presence.Name;
+                        _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
+                        _agentData.AgentUUID = _presence.UUID.ToString();
+                        _agentData.AgentHomeURI = _scene.GetAgentHomeURI(_presence.UUID);
+                        _agentData.ParentUUID = _scene.RegionInfo.RegionID.ToString();
+
+                        _dataSet.AvatarData.Add(_agentData);
+                    }
                 }
             }
 

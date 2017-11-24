@@ -11,6 +11,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         [JsonProperty(PropertyName = "Position")]
         public String AgentPosition = "0/0/0";
 
+        [JsonProperty(PropertyName = "HomeURI")]
+        public String AgentHomeURI = "";
+
         [JsonProperty(PropertyName = "UUID")]
         public String AgentUUID = "00000000-0000-0000-0000-000000000000";
 

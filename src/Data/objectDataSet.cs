@@ -17,6 +17,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher.Data
         [JsonProperty(PropertyName = "Sale")]
         public bool ObjectIsForSale = false;
 
+        [JsonProperty(PropertyName = "Price")]
+        public int ObjectSalePrice = 0;
+
         [JsonProperty(PropertyName = "Copy")]
         public bool ObjectIsForCopy = false;
 
