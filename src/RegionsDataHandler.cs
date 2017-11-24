@@ -90,41 +90,49 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _parcelSet.ParentUUID = _scene.RegionInfo.RegionID.ToString();
                     _parcelSet.ParcelUUID = _parcel.LandData.GlobalID.ToString();
 
-                    _dataSet.ParcelData.Add(_parcelSet);
+                    if ((request.ContainsKey("onlyVisibleInSearch") && _parcelSet.ParcelIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
+                        _dataSet.ParcelData.Add(_parcelSet);
                 }
 
                 foreach(SceneObjectGroup _cog in _scene.GetSceneObjectGroups())
                 {
-                    objectDataSet _objectData = new objectDataSet();
-
-                    _objectData.ObjectName = _cog.Name;
-                    _objectData.ObjectDescription = _cog.Description;
-                    _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
-                    _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
-                    _objectData.ObjectIsForSale = false;
-                    _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
-
-                    if (_cog.RootPart.ObjectSaleType == 1)
-                        _objectData.ObjectIsForSale = true;
-
-                    _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
-                    _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
-                    _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
-
-                    _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
-
-                    if(m_userManager != null)
+                    if(_cog.IsTemporary == false && _cog.IsAttachment == false)
                     {
-                        _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
-                        _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
+                        objectDataSet _objectData = new objectDataSet();
+
+                        _objectData.ObjectName = _cog.Name;
+                        _objectData.ObjectDescription = _cog.Description;
+                        _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
+                        _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
+                        _objectData.ObjectIsForSale = false;
+                        _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
+
+                        if (_cog.RootPart.ObjectSaleType == 1)
+                            _objectData.ObjectIsForSale = true;
+
+                        _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
+                        _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
+                        _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
+
+                        _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
+
+                        if (m_userManager != null)
+                        {
+                            _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
+                            _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
+
+                            if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
+                                _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                        }
+
+                        _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
+                        _objectData.ObjectImageUUID = GuessImage(_cog);
+                        _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
+
+
+                        if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
+                            _dataSet.ObjectData.Add(_objectData);
                     }
-
-
-                    _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
-                    _objectData.ObjectImageUUID = GuessImage(_cog);
-                    _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
-
-                    _dataSet.ObjectData.Add(_objectData);
                 }
 
                 foreach(ScenePresence _presence in _scene.GetScenePresences())
