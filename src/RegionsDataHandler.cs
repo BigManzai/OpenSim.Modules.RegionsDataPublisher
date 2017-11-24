@@ -105,7 +105,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
                 foreach(ScenePresence _presence in _scene.GetScenePresences())
                 {
-                    if(_presence.IsNPC == false)
+                    if(_presence.PresenceType == PresenceType.User)
                     {
                         agentDataSet _agentData = new agentDataSet();
                         _agentData.AgentName = _presence.Name;
