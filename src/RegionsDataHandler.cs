@@ -78,6 +78,9 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     {
                         _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
                         _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
+
+                        if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
+                            _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
                     }
                     
                     _parcelSet.ParcelBitmap = Convert.ToBase64String(_parcel.LandData.Bitmap);
