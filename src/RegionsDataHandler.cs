@@ -116,7 +116,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         _objectData.ObjectIsForSale = false;
                         _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
 
-                        if (_cog.RootPart.ObjectSaleType == 1)
+                        if (_cog.RootPart.ObjectSaleType != (byte)0)
                             _objectData.ObjectIsForSale = true;
 
                         _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
@@ -135,7 +135,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
                         _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
                         _objectData.ObjectImageUUID = GuessImage(_cog);
-                        _objectData.ObjectIsVisibleInSearch = getStatusFornSearch(_cog);
+                        _objectData.ObjectIsVisibleInSearch = getStatusForSearch(_cog);
 
 
                         if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
@@ -165,13 +165,13 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
         private bool getStatusForCopy(SceneObjectGroup prim)
         {
-            if (((uint)prim.RootPart.Flags & (uint)PrimFlags.ObjectCopy) != 0)
+            if (((uint)prim.RootPart.EveryoneMask & (uint)OpenMetaverse.PermissionMask.Copy) != 0)
                 return true;
 
             return false;
         }
 
-        private bool getStatusFornSearch(SceneObjectGroup prim)
+        private bool getStatusForSearch(SceneObjectGroup prim)
         {
             if ((prim.RootPart.Flags & PrimFlags.JointWheel) == PrimFlags.JointWheel)
                 return true;
