@@ -138,7 +138,7 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         _objectData.ObjectIsVisibleInSearch = getStatusForSearch(_cog);
 
 
-                        if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
+                        if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch") || (request.ContainsKey("showFreeToCopy") && _objectData.ObjectIsForCopy == true))
                             _dataSet.ObjectData.Add(_objectData);
                     }
                 }
