@@ -75,24 +75,47 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                     _parcelSet.ParcelGroup = _parcel.LandData.GroupID.ToString();
                     _parcelSet.ParcelOwner.OwnerUUID = _parcel.LandData.OwnerID.ToString();
 
-                    if (m_userManager != null && _parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
+                    if (_parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
                     {
-                        _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
-                        _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
+                        if(m_userManager != null)
+                        {
+                            _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
+                            _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
 
-                        if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
-                            _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                            if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
+                                _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                        }
                     }
                     else
                     {
-                        if(_parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
+                        if(_parcelSet.ParcelOwner.OwnerUUID == _parcelSet.ParcelGroup)
                         {
                             IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
 
                             if (groups != null)
                             {
-                                _parcelSet.ParcelOwner.OwnerName = groups.GetGroupRecord(_parcel.LandData.GroupID.ToString()).GroupName;
-                                _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                GroupRecord _group = groups.GetGroupRecord(_parcel.LandData.GroupID);
+
+                                if (_group != null)
+                                {
+                                    _parcelSet.ParcelOwner.OwnerName = _group.GroupName;
+                                    _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+
+                                    if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
+                                    {
+                                        GroupDataSet _groupData = new GroupDataSet();
+
+                                        _groupData.GroupName = _group.GroupName;
+                                        _groupData.GroupHomeURI = _regionData.RegionHomeURI;
+                                        _groupData.GroupUUID = _group.GroupID.ToString();
+                                        _groupData.GroupImage = _group.GroupPicture.ToString();
+                                        _groupData.GroupShowInList = _group.ShowInList;
+                                        _groupData.GroupAllowPublish = _group.AllowPublish;
+                                        _groupData.GroupFounder = _group.FounderID.ToString();
+
+                                        _dataSet.GroupData.Add(_groupData);
+                                    }
+                                }
                             }
                         }
                     }
@@ -138,24 +161,47 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
                         _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
 
-                        if (m_userManager != null && _objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
+                        if (_objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
                         {
-                            _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
-                            _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
+                            if(m_userManager != null)
+                            {
+                                _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
+                                _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
 
-                            if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
-                                _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
+                                    _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                            }
                         }
                         else
                         {
-                            if(_objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
+                            if(_objectData.ObjectOwner.OwnerUUID == _objectData.ObjectGroupUUID)
                             {
                                 IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
 
                                 if (groups != null)
                                 {
-                                    _objectData.ObjectOwner.OwnerName = groups.GetGroupRecord(_cog.RootPart.UUID.ToString()).GroupName;
-                                    _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                    GroupRecord _group = groups.GetGroupRecord(_cog.RootPart.GroupID);
+
+                                    if(_group != null)
+                                    {
+                                        _objectData.ObjectOwner.OwnerName = _group.GroupName;
+                                        _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+
+                                        if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
+                                        {
+                                            GroupDataSet _groupData = new GroupDataSet();
+
+                                            _groupData.GroupName = _group.GroupName;
+                                            _groupData.GroupHomeURI = _regionData.RegionHomeURI;
+                                            _groupData.GroupUUID = _group.GroupID.ToString();
+                                            _groupData.GroupImage = _group.GroupPicture.ToString();
+                                            _groupData.GroupShowInList = _group.ShowInList;
+                                            _groupData.GroupAllowPublish = _group.AllowPublish;
+                                            _groupData.GroupFounder = _group.FounderID.ToString();
+
+                                            _dataSet.GroupData.Add(_groupData);
+                                        }
+                                    }
                                 }
                             }
                         }
