@@ -4,6 +4,7 @@ using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.Servers.HttpServer;
+using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.OptionalModules.RegionsDataPublisher.Data;
 using OpenSim.Services.Interfaces;
@@ -82,6 +83,19 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                         if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
                             _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
                     }
+                    else
+                    {
+                        if(_parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
+                        {
+                            IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
+
+                            if (groups != null)
+                            {
+                                _parcelSet.ParcelOwner.OwnerName = groups.GetGroupRecord(_parcel.LandData.GroupID.ToString()).GroupName;
+                                _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                            }
+                        }
+                    }
 
                     _parcelSet.ParcelPosition = _parcel.CenterPoint.X + "/" + _parcel.CenterPoint.Y;
 
@@ -131,6 +145,19 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
                             if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
                                 _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                        }
+                        else
+                        {
+                            if(_objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
+                            {
+                                IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
+
+                                if (groups != null)
+                                {
+                                    _objectData.ObjectOwner.OwnerName = groups.GetGroupRecord(_cog.RootPart.UUID.ToString()).GroupName;
+                                    _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                }
+                            }
                         }
 
                         _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
