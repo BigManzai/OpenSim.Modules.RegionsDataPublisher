@@ -47,191 +47,199 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
 
             foreach(Scene _scene in m_scenes)
             {
-                regionDataSet _regionData = new regionDataSet();
-
-                _regionData.RegionName = ToUTF8(_scene.Name);
-                _regionData.RegionEstate = ToUTF8(_scene.RegionInfo.EstateSettings.EstateName);
-                _regionData.RegionImageUUID = _scene.RegionInfo.lastMapUUID.ToString();
-                _regionData.RegionPosition = _scene.RegionInfo.WorldLocX + "/" + _scene.RegionInfo.WorldLocY;
-                _regionData.RegionPublicAccess = _scene.RegionInfo.EstateSettings.PublicAccess;
-                _regionData.RegionSize = _scene.RegionInfo.RegionSizeX.ToString();
-                _regionData.RegionUUID = _scene.RegionInfo.RegionID.ToString();
-                _regionData.RegionIsVisibleInSearch = true;
-
-                if (m_config.Configs["Hypergrid"] != null)
-                    _regionData.RegionHomeURI = m_config.Configs["Hypergrid"].GetString("HomeURI", string.Empty);
-
-                _dataSet.RegionData.Add(_regionData);
-
-                List<ILandObject> _landData = _scene.LandChannel.AllParcels();
-                foreach(ILandObject _parcel in _landData)
+                if(_scene != null)
                 {
-                    parcelDataSet _parcelSet = new parcelDataSet();
+                    regionDataSet _regionData = new regionDataSet();
 
-                    _parcelSet.ParcelName = ToUTF8(_parcel.LandData.Name);
-                    _parcelSet.ParcelDescription = ToUTF8(_parcel.LandData.Description);
-                    _parcelSet.ImageUUID = _parcel.LandData.SnapshotID.ToString();
-                    _parcelSet.ParcelDwell = (int)_parcel.LandData.Dwell;
-                    _parcelSet.ParcelGroup = _parcel.LandData.GroupID.ToString();
-                    _parcelSet.ParcelOwner.OwnerUUID = _parcel.LandData.OwnerID.ToString();
+                    _regionData.RegionName = ToUTF8(_scene.Name);
+                    _regionData.RegionEstate = ToUTF8(_scene.RegionInfo.EstateSettings.EstateName);
+                    _regionData.RegionImageUUID = _scene.RegionInfo.lastMapUUID.ToString();
+                    _regionData.RegionPosition = _scene.RegionInfo.WorldLocX + "/" + _scene.RegionInfo.WorldLocY;
+                    _regionData.RegionPublicAccess = _scene.RegionInfo.EstateSettings.PublicAccess;
+                    _regionData.RegionSize = _scene.RegionInfo.RegionSizeX.ToString();
+                    _regionData.RegionUUID = _scene.RegionInfo.RegionID.ToString();
+                    _regionData.RegionIsVisibleInSearch = true;
 
-                    if (_parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
+                    if (m_config.Configs["Hypergrid"] != null)
+                        _regionData.RegionHomeURI = m_config.Configs["Hypergrid"].GetString("HomeURI", string.Empty);
+
+                    _dataSet.RegionData.Add(_regionData);
+
+                    List<ILandObject> _landData = _scene.LandChannel.AllParcels();
+                    foreach (ILandObject _parcel in _landData)
                     {
-                        if(m_userManager != null)
-                        {
-                            _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
-                            _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
+                        parcelDataSet _parcelSet = new parcelDataSet();
 
-                            if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
-                                _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
-                        }
-                    }
-                    else
-                    {
-                        if(_parcelSet.ParcelOwner.OwnerUUID == _parcelSet.ParcelGroup)
+                        if (_parcel.LandData != null)
                         {
-                            IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
+                            _parcelSet.ParcelName = ToUTF8(_parcel.LandData.Name);
+                            _parcelSet.ParcelDescription = ToUTF8(_parcel.LandData.Description);
+                            _parcelSet.ImageUUID = _parcel.LandData.SnapshotID.ToString();
+                            _parcelSet.ParcelDwell = (int)_parcel.LandData.Dwell;
+                            _parcelSet.ParcelGroup = _parcel.LandData.GroupID.ToString();
+                            _parcelSet.ParcelOwner.OwnerUUID = _parcel.LandData.OwnerID.ToString();
 
-                            if (groups != null)
+                            if (_parcelSet.ParcelOwner.OwnerUUID != _parcelSet.ParcelGroup)
                             {
-                                GroupRecord _group = groups.GetGroupRecord(_parcel.LandData.GroupID);
-
-                                if (_group != null)
+                                if (m_userManager != null)
                                 {
-                                    _parcelSet.ParcelOwner.OwnerName = _group.GroupName;
-                                    _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                    _parcelSet.ParcelOwner.OwnerName = m_userManager.GetUserName(_parcel.LandData.OwnerID);
+                                    _parcelSet.ParcelOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_parcel.LandData.OwnerID);
 
-                                    if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
-                                    {
-                                        GroupDataSet _groupData = new GroupDataSet();
-
-                                        _groupData.GroupName = _group.GroupName;
-                                        _groupData.GroupHomeURI = _regionData.RegionHomeURI;
-                                        _groupData.GroupUUID = _group.GroupID.ToString();
-                                        _groupData.GroupImage = _group.GroupPicture.ToString();
-                                        _groupData.GroupShowInList = _group.ShowInList;
-                                        _groupData.GroupAllowPublish = _group.AllowPublish;
-                                        _groupData.GroupFounder = _group.FounderID.ToString();
-
-                                        _dataSet.GroupData.Add(_groupData);
-                                    }
+                                    if (_parcelSet.ParcelOwner.OwnerHomeURI == String.Empty)
+                                        _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
                                 }
                             }
-                        }
-                    }
-
-                    _parcelSet.ParcelPosition = _parcel.CenterPoint.X + "/" + _parcel.CenterPoint.Y;
-
-                    if (_parcel.LandData.LandingType == (byte)LandingType.LandingPoint)
-                        if (_parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0)
-                            _parcelSet.ParcelPosition = _parcel.LandData.UserLocation.X + "/" + _parcel.LandData.UserLocation.Y + "/" + _parcel.LandData.UserLocation.Z;
-
-                    _parcelSet.ParcelPrims = _parcel.GetParcelMaxPrimCount();
-                    
-                    _parcelSet.ParcelSize = _parcel.LandData.Area;
-                    _parcelSet.ParcelBitmap = Convert.ToBase64String(_parcel.LandData.Bitmap);
-                    _parcelSet.ParcelPrice = _parcel.LandData.SalePrice;
-                    _parcelSet.ParcelIsVisibleInSearch = getStatusForSearch(_parcel);
-                    _parcelSet.ParcelIsForSale = getStatusForSale(_parcel);
-                    _parcelSet.ParentUUID = _scene.RegionInfo.RegionID.ToString();
-                    _parcelSet.ParcelUUID = _parcel.LandData.GlobalID.ToString();
-
-                    if ((request.ContainsKey("onlyVisibleInSearch") && _parcelSet.ParcelIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
-                        _dataSet.ParcelData.Add(_parcelSet);
-                }
-
-                foreach(SceneObjectGroup _cog in _scene.GetSceneObjectGroups())
-                {
-                    if(_cog.IsTemporary == false && _cog.IsAttachment == false)
-                    {
-                        objectDataSet _objectData = new objectDataSet();
-
-                        _objectData.ObjectName = ToUTF8(_cog.Name);
-                        _objectData.ObjectDescription = ToUTF8(_cog.Description);
-                        _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
-                        _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
-                        _objectData.ObjectIsForSale = false;
-                        _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
-
-                        if (_cog.RootPart.ObjectSaleType != (byte)0)
-                            _objectData.ObjectIsForSale = true;
-
-                        _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
-                        _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
-                        _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
-                        _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
-
-                        if (_objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
-                        {
-                            if(m_userManager != null)
+                            else
                             {
-                                _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
-                                _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
-
-                                if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
-                                    _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
-                            }
-                        }
-                        else
-                        {
-                            if(_objectData.ObjectOwner.OwnerUUID == _objectData.ObjectGroupUUID)
-                            {
-                                IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
-
-                                if (groups != null)
+                                if (_parcelSet.ParcelOwner.OwnerUUID == _parcelSet.ParcelGroup)
                                 {
-                                    GroupRecord _group = groups.GetGroupRecord(_cog.RootPart.GroupID);
+                                    IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
 
-                                    if(_group != null)
+                                    if (groups != null)
                                     {
-                                        _objectData.ObjectOwner.OwnerName = _group.GroupName;
-                                        _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                        GroupRecord _group = groups.GetGroupRecord(_parcel.LandData.GroupID);
 
-                                        if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
+                                        if (_group != null)
                                         {
-                                            GroupDataSet _groupData = new GroupDataSet();
+                                            _parcelSet.ParcelOwner.OwnerName = _group.GroupName;
+                                            _parcelSet.ParcelOwner.OwnerHomeURI = _regionData.RegionHomeURI;
 
-                                            _groupData.GroupName = _group.GroupName;
-                                            _groupData.GroupHomeURI = _regionData.RegionHomeURI;
-                                            _groupData.GroupUUID = _group.GroupID.ToString();
-                                            _groupData.GroupImage = _group.GroupPicture.ToString();
-                                            _groupData.GroupShowInList = _group.ShowInList;
-                                            _groupData.GroupAllowPublish = _group.AllowPublish;
-                                            _groupData.GroupFounder = _group.FounderID.ToString();
+                                            if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
+                                            {
+                                                GroupDataSet _groupData = new GroupDataSet();
 
-                                            _dataSet.GroupData.Add(_groupData);
+                                                _groupData.GroupName = _group.GroupName;
+                                                _groupData.GroupHomeURI = _regionData.RegionHomeURI;
+                                                _groupData.GroupUUID = _group.GroupID.ToString();
+                                                _groupData.GroupImage = _group.GroupPicture.ToString();
+                                                _groupData.GroupShowInList = _group.ShowInList;
+                                                _groupData.GroupAllowPublish = _group.AllowPublish;
+                                                _groupData.GroupFounder = _group.FounderID.ToString();
+
+                                                _dataSet.GroupData.Add(_groupData);
+                                            }
                                         }
                                     }
                                 }
                             }
+
+                            _parcelSet.ParcelPosition = _parcel.CenterPoint.X + "/" + _parcel.CenterPoint.Y;
+
+                            if (_parcel.LandData.LandingType == (byte)LandingType.LandingPoint)
+                                if (_parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0 && _parcel.LandData.UserLocation.X != 0)
+                                    _parcelSet.ParcelPosition = _parcel.LandData.UserLocation.X + "/" + _parcel.LandData.UserLocation.Y + "/" + _parcel.LandData.UserLocation.Z;
+
+                            _parcelSet.ParcelPrims = _parcel.GetParcelMaxPrimCount();
+
+                            _parcelSet.ParcelSize = _parcel.LandData.Area;
+                            _parcelSet.ParcelBitmap = Convert.ToBase64String(_parcel.LandData.Bitmap);
+                            _parcelSet.ParcelPrice = _parcel.LandData.SalePrice;
+                            _parcelSet.ParcelIsVisibleInSearch = getStatusForSearch(_parcel);
+                            _parcelSet.ParcelIsForSale = getStatusForSale(_parcel);
+                            _parcelSet.ParentUUID = _scene.RegionInfo.RegionID.ToString();
+                            _parcelSet.ParcelUUID = _parcel.LandData.GlobalID.ToString();
+
+                            if ((request.ContainsKey("onlyVisibleInSearch") && _parcelSet.ParcelIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch"))
+                                _dataSet.ParcelData.Add(_parcelSet);
                         }
-
-                        _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
-                        _objectData.ObjectImageUUID = GuessImage(_cog);
-                        _objectData.ObjectIsVisibleInSearch = getStatusForSearch(_cog);
-
-
-                        if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch") || (request.ContainsKey("showFreeToCopy") && _objectData.ObjectIsForCopy == true))
-                            _dataSet.ObjectData.Add(_objectData);
                     }
-                }
 
-                foreach(ScenePresence _presence in _scene.GetScenePresences())
-                {
-                    if(_presence.PresenceType == PresenceType.User)
+                    foreach (SceneObjectGroup _cog in _scene.GetSceneObjectGroups())
                     {
-                        agentDataSet _agentData = new agentDataSet();
-                        _agentData.AgentName = _presence.Name;
-                        _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
-                        _agentData.AgentUUID = _presence.UUID.ToString();
-                        _agentData.AgentHomeURI = _scene.GetAgentHomeURI(_presence.UUID);
-                        _agentData.ParentUUID = _scene.LandChannel.GetLandObject(_presence.AbsolutePosition.X, _presence.AbsolutePosition.Y).LandData.GlobalID.ToString();
+                        if(_cog != null)
+                        {
+                            if (_cog.IsTemporary == false && _cog.IsAttachment == false)
+                            {
+                                objectDataSet _objectData = new objectDataSet();
 
-                        _dataSet.AvatarData.Add(_agentData);
+                                _objectData.ObjectName = ToUTF8(_cog.Name);
+                                _objectData.ObjectDescription = ToUTF8(_cog.Description);
+                                _objectData.ObjectUUID = _cog.RootPart.UUID.ToString();
+                                _objectData.ParentUUID = _scene.LandChannel.GetLandObject(_cog.RootPart.AbsolutePosition.X, _cog.RootPart.AbsolutePosition.Y).LandData.GlobalID.ToString();
+                                _objectData.ObjectIsForSale = false;
+                                _objectData.ObjectSalePrice = _cog.RootPart.SalePrice;
+
+                                if (_cog.RootPart.ObjectSaleType != (byte)0)
+                                    _objectData.ObjectIsForSale = true;
+
+                                _objectData.ObjectIsForCopy = getStatusForCopy(_cog);
+                                _objectData.ObjectGroupUUID = _cog.GroupID.ToString();
+                                _objectData.ObjectItemUUID = _cog.FromItemID.ToString();
+                                _objectData.ObjectOwner.OwnerUUID = _cog.OwnerID.ToString();
+
+                                if (_objectData.ObjectOwner.OwnerUUID != _objectData.ObjectGroupUUID)
+                                {
+                                    if (m_userManager != null)
+                                    {
+                                        _objectData.ObjectOwner.OwnerName = m_userManager.GetUserName(_cog.OwnerID);
+                                        _objectData.ObjectOwner.OwnerHomeURI = m_userManager.GetUserHomeURL(_cog.OwnerID);
+
+                                        if (_objectData.ObjectOwner.OwnerHomeURI == String.Empty)
+                                            _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+                                    }
+                                }
+                                else
+                                {
+                                    if (_objectData.ObjectOwner.OwnerUUID == _objectData.ObjectGroupUUID)
+                                    {
+                                        IGroupsModule groups = _scene.RequestModuleInterface<IGroupsModule>();
+
+                                        if (groups != null)
+                                        {
+                                            GroupRecord _group = groups.GetGroupRecord(_cog.RootPart.GroupID);
+
+                                            if (_group != null)
+                                            {
+                                                _objectData.ObjectOwner.OwnerName = _group.GroupName;
+                                                _objectData.ObjectOwner.OwnerHomeURI = _regionData.RegionHomeURI;
+
+                                                if (_dataSet.GroupData.Find(x => x.GroupUUID == _group.GroupID.ToString()) == null)
+                                                {
+                                                    GroupDataSet _groupData = new GroupDataSet();
+
+                                                    _groupData.GroupName = _group.GroupName;
+                                                    _groupData.GroupHomeURI = _regionData.RegionHomeURI;
+                                                    _groupData.GroupUUID = _group.GroupID.ToString();
+                                                    _groupData.GroupImage = _group.GroupPicture.ToString();
+                                                    _groupData.GroupShowInList = _group.ShowInList;
+                                                    _groupData.GroupAllowPublish = _group.AllowPublish;
+                                                    _groupData.GroupFounder = _group.FounderID.ToString();
+
+                                                    _dataSet.GroupData.Add(_groupData);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                _objectData.ObjectPosition = _cog.RootPart.AbsolutePosition.X + "/" + _cog.RootPart.AbsolutePosition.Y + "/" + _cog.RootPart.AbsolutePosition.Z;
+                                _objectData.ObjectImageUUID = GuessImage(_cog);
+                                _objectData.ObjectIsVisibleInSearch = getStatusForSearch(_cog);
+
+
+                                if ((request.ContainsKey("onlyVisibleInSearch") && _objectData.ObjectIsVisibleInSearch == true) || !request.ContainsKey("onlyVisibleInSearch") || (request.ContainsKey("showFreeToCopy") && _objectData.ObjectIsForCopy == true))
+                                    _dataSet.ObjectData.Add(_objectData);
+                            }
+                        }
+                    }
+
+                    foreach (ScenePresence _presence in _scene.GetScenePresences())
+                    {
+                        if (_presence.PresenceType == PresenceType.User)
+                        {
+                            agentDataSet _agentData = new agentDataSet();
+                            _agentData.AgentName = _presence.Name;
+                            _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
+                            _agentData.AgentUUID = _presence.UUID.ToString();
+                            _agentData.AgentHomeURI = _scene.GetAgentHomeURI(_presence.UUID);
+                            _agentData.ParentUUID = _scene.LandChannel.GetLandObject(_presence.AbsolutePosition.X, _presence.AbsolutePosition.Y).LandData.GlobalID.ToString();
+
+                            _dataSet.AvatarData.Add(_agentData);
+                        }
                     }
                 }
             }
-
             
             return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dataSet, Formatting.Indented));
         }
