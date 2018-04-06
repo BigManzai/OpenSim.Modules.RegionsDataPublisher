@@ -248,10 +248,15 @@ namespace OpenSim.Region.OptionalModules.RegionsDataPublisher
                                 {
                                     agentDataSet _agentData = new agentDataSet();
                                     _agentData.AgentName = _presence.Name;
-                                    _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
+
+                                    if (_presence.AbsolutePosition != null)
+                                        _agentData.AgentPosition = _presence.AbsolutePosition.X + "/" + _presence.AbsolutePosition.Y + "/" + _presence.AbsolutePosition.Z;
+
                                     _agentData.AgentUUID = _presence.UUID.ToString();
                                     _agentData.AgentHomeURI = _scene.GetAgentHomeURI(_presence.UUID);
-                                    _agentData.ParentUUID = _scene.LandChannel.GetLandObject(_presence.AbsolutePosition.X, _presence.AbsolutePosition.Y).LandData.GlobalID.ToString();
+
+                                    if (_scene.LandChannel != null && _presence.AbsolutePosition != null)
+                                        _agentData.ParentUUID = _scene.LandChannel.GetLandObject(_presence.AbsolutePosition.X, _presence.AbsolutePosition.Y).LandData.GlobalID.ToString();
 
                                     _dataSet.AvatarData.Add(_agentData);
                                 }
